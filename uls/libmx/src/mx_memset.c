@@ -1,0 +1,9 @@
+#include "../inc/libmx.h"
+
+void *mx_memset(void *b, int c, size_t len) {
+    char *pointer = (char*)b;
+
+    for (size_t i = 0; i < len; i++)
+        pointer[i] = c;
+    return b;
+}
