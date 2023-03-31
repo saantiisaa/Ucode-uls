@@ -29,66 +29,47 @@ int main(int argc, char **argv) {
     }
     for (int j = 0; main.dirs[j] != NULL; j++) {
         if (!mx_file_exists(main.dirs[j])) {
-            mx_printstr("uls: ");
-            mx_printstr(main.dirs[j]);
-            mx_printstr(": No such file or directory\n");
+            mx_printerr("uls: ");
+            mx_printerr(main.dirs[j]);
+            mx_printerr(": No such file or directory\n");
             error = true;
         }
     }
+
+    t_list *filelist = NULL;
     for (int j = 0; main.dirs[j] != NULL; j++) {
         if (mx_is_dir(main.dirs[j]) == 1 && mx_file_exists(main.dirs[j])) {
-            if (mx_get_char_index(main.flags, 'l') > 0) {
-                struct stat file_stat;
-
-                if (lstat(main.dirs[j], &file_stat) == -1) {
-                    mx_error_no_such_file(main.dirs[j]);
-                    error = true;
-                    continue;
-                }
-
-                struct passwd *pwd = getpwuid(file_stat.st_uid);
-                struct group *grp = getgrgid(file_stat.st_gid);
-
-                mx_print_rwx(main.dirs[j]);
-                #ifdef __linux__
-                mx_printstr(" ");
-                mx_print_nlink_linux(&file_stat, main.dirs[j]);
-                #endif
-                #ifdef __APPLE__
-                mx_print_nlink(&file_stat, main.dirs[j], (int)file_stat.st_size - 1);
-                #endif
-                mx_printstr(" ");
-                mx_printstr(pwd->pw_name);
-                mx_printstr(" ");
-                mx_printstr(grp->gr_name);
-                mx_printstr(" ");
-                mx_printint((int)file_stat.st_size);
-                mx_printstr(" ");
-                mx_print_m_time(&file_stat);
-                mx_printstr(" ");
-            }
-            mx_printstr(main.dirs[j]);
-            mx_printstr("\n");
+            if (filelist == NULL) 
+                filelist = mx_fl_create_node(mx_strdup(main.dirs[j]));
+            else 
+                mx_fl_push_back(&filelist, mx_strdup(main.dirs[j]));
             files_count++;
         }
         if (mx_is_dir(main.dirs[j]) == 0 && mx_file_exists(main.dirs[j])) {
             dirs_count++;
         }
     }
+
+    if (filelist != NULL) {
+        mx_format_output(&main, filelist, ".", true);
+    }
+    mx_delete_filelist(filelist);
+
     if (files_count > 0 && dirs_count > 0) {
         mx_printstr("\n");
     }
+
     for (int i = 0; main.dirs[i] != NULL; i++) {
         if (!mx_file_exists(main.dirs[i])) {
             error = true;
             continue;
         }
         if (mx_is_dir(main.dirs[i]) == 0) {
-            if (mx_strcmp(main.dirs[i], ".") != 0 && mx_file_exists(main.dirs[i]) && (dirs_count > 1 || files_count > 0 || error)) {
+            if (mx_file_exists(main.dirs[i]) && (dirs_count > 1 || files_count > 0 || error)) {
                 mx_printstr(main.dirs[i]);
                 mx_printstr(":\n");
             }
-            mx_list_files(&main, main.dirs[i]); //leak here
+            mx_list_files(&main, main.dirs[i]);
             for (int k = i; main.dirs[k] != NULL; k++) {
                 if (mx_is_dir(main.dirs[k + 1]) == 0 && main.dirs[k + 1] != NULL && mx_file_exists(main.dirs[k + 1])) {
                     mx_printstr("\n");

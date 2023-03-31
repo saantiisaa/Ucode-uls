@@ -4,8 +4,6 @@ off_t fsize(const char *filename) {
     struct stat st;
     if (stat(filename, &st) == 0)
         return st.st_size;
-    /*fprintf(stderr, "Cannot determine size of %s: %s\n",
-            filename, strerror(errno));*/
     mx_printerr("Cannot determine size of ");
     mx_printerr(filename);
     mx_printerr(": ");
@@ -47,5 +45,4 @@ void mx_get_attributes(t_list *filelist, char *path) {
         if (cur == NULL) break;
         get_file(path, cur);
     }
-
 }

@@ -78,8 +78,8 @@ bool mx_compare_reverse(void *arg1, void *arg2) {
 
 void mx_process_filelist(t_main *main, char *path) {
     t_list *filelist = NULL;
-    filelist = mx_create_filelist(main, path); //leak
-    mx_format_output(main, filelist, path);
+    filelist = mx_create_filelist(main, path);
+    mx_format_output(main, filelist, path, false);
     mx_delete_filelist(filelist);
 }
 
